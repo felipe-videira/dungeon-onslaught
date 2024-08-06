@@ -1,11 +1,74 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
-public class RoomNodeSO : ScriptableObject {
+public class RoomNodeSO : ScriptableObject
+{
     [HideInInspector] public string Id;
     [HideInInspector] public List<string> ParentRoomNodeList = new List<string>();
     [HideInInspector] public List<string> ChildRoomNodeList = new List<string>();
     [HideInInspector] public RoomNodeGraphSO RoomNodeGraph;
     public RoomNodeTypeSO RoomNodeType;
     [HideInInspector] public RoomNodeTypeListSO RoomNodeTypeList;
+
+    #region Editor Code
+
+#if UNITY_EDITOR
+
+    [HideInInspector] public Rect Rect;
+
+    public void Initialise(Rect rect, RoomNodeGraphSO nodeGraph, RoomNodeTypeSO roomNodeType)
+    {
+        Rect = rect;
+        Id = Guid.NewGuid().ToString();
+        name = "RoomNode";
+        RoomNodeGraph = nodeGraph;
+        RoomNodeType = roomNodeType;
+
+        // Load room node type list
+        RoomNodeTypeList = GameResources.Instance.RoomNodeTypeList;
+    }
+
+    public void Draw(GUIStyle nodeStyle)
+    {
+        //  Draw Node Box Using Begin Area
+        GUILayout.BeginArea(Rect, nodeStyle);
+
+        // Start Region To Detect Popup Selection Changes
+        EditorGUI.BeginChangeCheck();
+
+        // Display a popup using the RoomNodeType name values that can be selected from (default to the currently set roomNodeType)
+        int selected = RoomNodeTypeList.List.FindIndex(x => x == RoomNodeType);
+
+        int selection = EditorGUILayout.Popup("", selected, GetRoomNodeTypesToDisplay());
+
+        RoomNodeType = RoomNodeTypeList.List[selection];
+
+        if (EditorGUI.EndChangeCheck())
+            EditorUtility.SetDirty(this);
+
+        GUILayout.EndArea();
+    }
+
+    /// <summary>
+    /// Populate a string array with the room node types to display that can be selected
+    /// </summary>
+    public string[] GetRoomNodeTypesToDisplay()
+    {
+        string[] roomArray = new string[RoomNodeTypeList.List.Count];
+
+        for (int i = 0; i < RoomNodeTypeList.List.Count; i++)
+        {
+            if (RoomNodeTypeList.List[i].DisplayInNodeGraphEditor)
+            {
+                roomArray[i] = RoomNodeTypeList.List[i].RoomNodeTypeName;
+            }
+        }
+
+        return roomArray;
+    }
+
+#endif
+    #endregion Editor Code
 }
