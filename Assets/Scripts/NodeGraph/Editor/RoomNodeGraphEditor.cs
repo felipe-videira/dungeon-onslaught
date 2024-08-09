@@ -4,15 +4,16 @@ using UnityEditor.Callbacks;
 
 public class RoomNodeGraphEditor : EditorWindow
 {
-    GUIStyle m_RoomNodeStyle;
-    RoomNodeTypeListSO m_RoomNodeTypeList;
+    private GUIStyle m_RoomNodeStyle;
+    private RoomNodeTypeListSO m_RoomNodeTypeList;
+    private RoomNodeSO m_CurrentRoomNode = null;
 
-    static RoomNodeGraphSO m_CurrentRoomNodeGraph;
+    private static RoomNodeGraphSO m_CurrentRoomNodeGraph;
 
-    const float k_NodeWidth = 160f;
-    const float k_NodeHeight = 75f;
-    const int k_NodePadding = 25;
-    const int k_NodeBorder = 12;
+    private const float k_NodeWidth = 160f;
+    private const float k_NodeHeight = 75f;
+    private const int k_NodePadding = 25;
+    private const int k_NodeBorder = 12;
 
 
     [MenuItem("Room Node Graph Editor", menuItem = "Window/Dungeon Editor/Room Node Graph Editor")]
@@ -71,10 +72,40 @@ public class RoomNodeGraphEditor : EditorWindow
         return false;
     }
 
-
+    /// <summary>
+    /// Process events on the room node graphs and nodes, like mouse down events and other
+    /// </summary>
     private void ProcessEvents(Event currentEvent)
     {
-        ProcessRoomNodeGraphEvents(currentEvent);
+        if (m_CurrentRoomNode == null || !m_CurrentRoomNode.IsLeftClickDragging)
+        {
+            m_CurrentRoomNode = IsMouseOverRoomNode(currentEvent);
+        }
+
+        if (m_CurrentRoomNode != null)
+        {
+            m_CurrentRoomNode.ProcessEvents(currentEvent);
+        }
+        else
+        {
+            ProcessRoomNodeGraphEvents(currentEvent);
+        }
+    }
+
+    /// <summary>
+    ///  Check to see to mouse is over a room node - if so then return the room node else return null
+    /// </summary>
+    private RoomNodeSO IsMouseOverRoomNode(Event currentEvent)
+    {
+        for (int i = m_CurrentRoomNodeGraph.RoomNodeList.Count - 1; i >= 0; i--)
+        {
+            if (m_CurrentRoomNodeGraph.RoomNodeList[i].Rect.Contains(currentEvent.mousePosition))
+            {
+                return m_CurrentRoomNodeGraph.RoomNodeList[i];
+            }
+        }
+
+        return null;
     }
 
     private void ProcessRoomNodeGraphEvents(Event currentEvent)
