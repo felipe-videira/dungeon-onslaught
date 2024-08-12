@@ -5,9 +5,10 @@ using UnityEditor;
 
 public class RoomNodeSO : ScriptableObject
 {
-    [HideInInspector] public string Id;
-    [HideInInspector] public List<string> ParentRoomNodeList = new List<string>();
-    [HideInInspector] public List<string> ChildRoomNodeList = new List<string>();
+    //TODO: add back the hide in inspector
+    public string Id;
+    public List<string> ParentRoomNodeIdList = new List<string>();
+    public List<string> ChildRoomNodeIdList = new List<string>();
     [HideInInspector] public RoomNodeGraphSO RoomNodeGraph;
     public RoomNodeTypeSO RoomNodeType;
     [HideInInspector] public RoomNodeTypeListSO RoomNodeTypeList;
@@ -102,6 +103,16 @@ public class RoomNodeSO : ScriptableObject
         {
             ProcessLeftClickDownEvent();
         }
+        // Right click down
+        else if (currentEvent.button == 1)
+        {
+            ProcessRightClickDownEvent(currentEvent);
+        }
+    }
+
+    private void ProcessRightClickDownEvent(Event currentEvent)
+    {
+        RoomNodeGraph.SetNodeToDrawConnectionLineFrom(this, currentEvent.mousePosition);
     }
 
     private void ProcessLeftClickDownEvent()
@@ -152,6 +163,17 @@ public class RoomNodeSO : ScriptableObject
         EditorUtility.SetDirty(this);
     }
 
+    public bool AddChildRoomNodeIDToRoomNode(string childId)
+    {
+        ChildRoomNodeIdList.Add(childId);
+        return true;
+    }
+
+    public bool AddParentRoomNodeIDToRoomNode(string parentId)
+    {
+        ParentRoomNodeIdList.Add(parentId);
+        return true;
+    }
 
 #endif
     #endregion Editor Code
