@@ -5,10 +5,9 @@ using UnityEditor;
 
 public class RoomNodeSO : ScriptableObject
 {
-    //TODO: add back the hide in inspector
-    public string Id;
-    public List<string> ParentRoomNodeIdList = new List<string>();
-    public List<string> ChildRoomNodeIdList = new List<string>();
+    [HideInInspector] public string Id;
+    [HideInInspector] public List<string> ParentRoomNodeIdList = new List<string>();
+    [HideInInspector] public List<string> ChildRoomNodeIdList = new List<string>();
     [HideInInspector] public RoomNodeGraphSO RoomNodeGraph;
     public RoomNodeTypeSO RoomNodeType;
     [HideInInspector] public RoomNodeTypeListSO RoomNodeTypeList;
@@ -176,7 +175,47 @@ public class RoomNodeSO : ScriptableObject
 
     public bool AddChildRoomNodeIDToRoomNode(string childId)
     {
-        ChildRoomNodeIdList.Add(childId);
+        if (IsChildRoomValid(childId))
+        {
+            ChildRoomNodeIdList.Add(childId);
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsChildRoomValid(string childId)
+    {
+        if (RoomNodeType.IsNone)
+            return false;
+
+        // If the child node has a type of none then return false
+        if (RoomNodeGraph.GetRoomNode(childId).RoomNodeType.IsNone)
+            return false;
+
+        // If the node already has a child with this child ID return false
+        if (ChildRoomNodeIdList.Contains(childId))
+            return false;
+
+        // If this node ID and the child ID are the same return false
+        if (Id == childId)
+            return false;
+
+        // If this childID is already in the parentID list return false
+        if (ParentRoomNodeIdList.Contains(childId))
+            return false;
+
+        // If adding a corridor check that this node has < the maximum permitted child corridors
+        if (RoomNodeGraph.GetRoomNode(childId).RoomNodeType.IsCorridor && ChildRoomNodeIdList.Count >= Settings.maxChildCorridors)
+            return false;
+
+        // if the child room is an entrance return false - the entrance must always be the top level parent node
+        if (RoomNodeGraph.GetRoomNode(childId).RoomNodeType.IsEntrance)
+            return false;
+
+        // If adding a room to a corridor check that this corridor node doesn't already have a room added
+        if (RoomNodeType.IsCorridor && ChildRoomNodeIdList.Count > 0)
+            return false;
+
         return true;
     }
 
