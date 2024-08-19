@@ -55,6 +55,26 @@ public class RoomNodeSO : ScriptableObject
             int selection = EditorGUILayout.Popup("", selected, GetRoomNodeTypesToDisplay());
 
             RoomNodeType = RoomNodeTypeList.List[selection];
+
+            // If the room type selection has changed making child connections potentially invalid
+            if ((RoomNodeTypeList.List[selected].IsCorridor && !RoomNodeTypeList.List[selection].IsCorridor)
+                || (!RoomNodeTypeList.List[selected].IsCorridor && RoomNodeTypeList.List[selection].IsCorridor)
+                || (!RoomNodeTypeList.List[selected].IsBossRoom && RoomNodeTypeList.List[selection].IsBossRoom))
+            {
+                // If a room node type has been changed and it already has children then delete the parent child links since we need to revalidate any
+                if (ChildRoomNodeIdList.Count > 0)
+                {
+                    for (int i = ChildRoomNodeIdList.Count - 1; i >= 0; i--)
+                    {
+                        RoomNodeSO childRoomNode = RoomNodeGraph.GetRoomNode(ChildRoomNodeIdList[i]);
+                        if (childRoomNode != null)
+                        {
+                            RemoveChildRoomNodeIDFromRoomNode(childRoomNode.Id);
+                            childRoomNode.RemoveParentRoomNodeIDFromRoomNode(Id);
+                        }
+                    }
+                }
+            }
         }
 
 
@@ -223,6 +243,27 @@ public class RoomNodeSO : ScriptableObject
     {
         ParentRoomNodeIdList.Add(parentId);
         return true;
+    }
+
+    public bool RemoveChildRoomNodeIDFromRoomNode(string childID)
+    {
+        // if the node contains the child ID then remove it
+        if (ChildRoomNodeIdList.Contains(childID))
+        {
+            ChildRoomNodeIdList.Remove(childID);
+            return true;
+        }
+        return false;
+    }
+
+    public bool RemoveParentRoomNodeIDFromRoomNode(string parentID)
+    {
+        if (ParentRoomNodeIdList.Contains(parentID))
+        {
+            ParentRoomNodeIdList.Remove(parentID);
+            return true;
+        }
+        return false;
     }
 
 #endif
