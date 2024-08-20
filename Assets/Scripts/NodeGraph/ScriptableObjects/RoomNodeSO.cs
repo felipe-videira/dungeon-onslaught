@@ -58,8 +58,7 @@ public class RoomNodeSO : ScriptableObject
 
             // If the room type selection has changed making child connections potentially invalid
             if ((RoomNodeTypeList.List[selected].IsCorridor && !RoomNodeTypeList.List[selection].IsCorridor)
-                || (!RoomNodeTypeList.List[selected].IsCorridor && RoomNodeTypeList.List[selection].IsCorridor)
-                || (!RoomNodeTypeList.List[selected].IsBossRoom && RoomNodeTypeList.List[selection].IsBossRoom))
+                || (!RoomNodeTypeList.List[selected].IsCorridor && RoomNodeTypeList.List[selection].IsCorridor))
             {
                 // If a room node type has been changed and it already has children then delete the parent child links since we need to revalidate any
                 if (ChildRoomNodeIdList.Count > 0)
